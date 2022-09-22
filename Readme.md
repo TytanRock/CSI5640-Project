@@ -3,7 +3,7 @@
 Project is to implement kmeans and hardware-accelerate with openacc
 
 
-##OpenAcc setup
+## OpenAcc setup
 Connect to VPN (request SECS account if you don't have one at: https://elara.secs.oakland.edu/SECSNetworkLogins/request.aspx). It only takes a few minutes for the to approve. 
 
 ssh into:
