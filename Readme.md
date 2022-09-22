@@ -25,10 +25,10 @@ You have to use the full path. In my case:
 Exmaple compile command for single CPU:
 /SECS/home/k/kzunich/hpc-sdk-build/Linux_x86_64/22.7/compilers/bin/pgcc -O3 acc_heat_single.c -o heat
 
-pgcc:               Compiler
--acc:               enables openacc
--ta=tesla:cc35:     targets the tesla nvidia gpus
-,nofma:             still looking into the meaning of this flag
--Minfo=accel:       More debug info 
-acc_heat_single.c:  program name
--o heat:             executable output name
+pgcc:               Compiler  
+-acc:               enables openacc  
+-ta=tesla:cc35:     targets the tesla nvidia gpus  
+,nofma:             still looking into the meaning of this flag  
+-Minfo=accel:       More debug info  
+acc_heat_single.c:  program name  
+-o heat:             executable output name  
