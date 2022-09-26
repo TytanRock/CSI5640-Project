@@ -1,7 +1,8 @@
 # CSI 5640 Project
 
-Project is to implement kmeans and hardware-accelerate with openacc
-Documents link: https://drive.google.com/drive/u/1/folders/0AGVr6qJfNhe8Uk9PVA
+Project is to implement kmeans and hardware-accelerate with openacc  
+Documents link: 
+https://drive.google.com/drive/u/1/folders/0AGVr6qJfNhe8Uk9PVA
 
 
 ## OpenAcc setup
