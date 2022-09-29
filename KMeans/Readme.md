@@ -16,7 +16,7 @@ To build perform the following steps in this directory:
 1. `mkdir build`
 2. `cd build`
 3. `cmake .. -DACCELERATION_TYPE:STRING=<type>` with `<type>` being replaced by one of the following values
-  - NO_ACCEL - Do not do any acceleration. This is equivalent to `gcc -O3 -o no_accel_picture_kmeans`
-  - THREADED - Perform threaded acceleration. This is equivalent to `pgcc -O3 -acc -ta=multicore -Minfo=accel -o threaded_picture_kmeans`
-  - GPU - Perform GPU acceleration. This is equivalent to `pgcc -O3 -acc -ta=tesla:cc35,nofma -Minfo=accel -o gpu_accel_picture_kmeans`
+   - NO_ACCEL - Do not do any acceleration. This is equivalent to `gcc -O3 -o no_accel_picture_kmeans`
+   - THREADED - Perform threaded acceleration. This is equivalent to `pgcc -O3 -acc -ta=multicore -Minfo=accel -o threaded_picture_kmeans`
+   - GPU - Perform GPU acceleration. This is equivalent to `pgcc -O3 -acc -ta=tesla:cc35,nofma -Minfo=accel -o gpu_accel_picture_kmeans`
 4. Execute the binary you created. The resultant binary will change based on the type of acceleration you provided.
