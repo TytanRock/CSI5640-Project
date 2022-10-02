@@ -4,5 +4,13 @@
 #pragma once
 
 #include <stdint.h>
+#include <stddef.h>
 
-typedef uint_least32_t pixel_type;
+typedef union _pixel_type{
+    uint8_t data[3];
+    struct {
+        uint8_t r;
+        uint8_t g;
+        uint8_t b;
+    } rgb;
+} pixel_type;

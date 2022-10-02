@@ -1,5 +1,4 @@
-#include "status_codes.h"
-#include "types.h"
+#include "picture_decoder.h"
 #include <stdio.h>
 #include <string.h>
 
@@ -16,10 +15,10 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***ar
 {
     /* Make sure none of the parameters are null */
     if (arr == NULL || x_size == NULL || y_size == NULL) return InvalidParameters;
-    /* Initialize pointers to NULL so caller knows if they've been malloc'd or not */
+    /* Initialize values to default values so we know they're all properly set */
     *arr = NULL;
-    *x_size = NULL;
-    *y_size = NULL;
+    *x_size = 0;
+    *y_size = 0;
 
     /**
      * Bitmap file has the following contents:
@@ -37,8 +36,8 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***ar
 
     /* Read file header at 14 bytes */
     uint8_t file_header_text[14];
-    size_t read_size = fread(file_header_text, sizeof(uint8_t), sizeof(file_header_text) / sizeof(*file_header_text), fp);
-    if (read_size != sizeof(file_header_text) / sizeof(*file_header_text)) return FileIsIncorrectLength;
+    size_t read_size = fread(file_header_text, 1, sizeof(file_header_text) / sizeof(*file_header_text), fp);
+    if (read_size != sizeof(file_header_text) / sizeof(*file_header_text)) return FileLengthIsIncorrect;
 
     /* And verify header matches expectations */
     enum bitmap_format {
@@ -78,8 +77,8 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***ar
             /* Width is 4 bytes at offset 0x12, Height is 4 bytes at offset 0x16 */
             /* So get the next 12 bytes and we can find the height and width */
             uint8_t bitmap_info_header[12];
-            read_size = fread(bitmap_info_header, sizeof(uint8_t), sizeof(bitmap_info_header) / sizeof(*bitmap_info_header), fp);
-            if (read_size != sizeof(bitmap_info_header) / sizeof(*bitmap_info_header)) return FileIsIncorrectLength;
+            read_size = fread(bitmap_info_header, 1, sizeof(bitmap_info_header) / sizeof(*bitmap_info_header), fp);
+            if (read_size != sizeof(bitmap_info_header) / sizeof(*bitmap_info_header)) return FileLengthIsIncorrect;
             memcpy(x_size, &bitmap_info_header[4], 4);
             memcpy(y_size, &bitmap_info_header[8], 4);
         }   break;
@@ -92,12 +91,18 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***ar
     /* First seek to where the data actually starts */
     if (fseek(fp, pixel_array_offset, SEEK_SET) != 0) return FileLengthIsIncorrect;
     /* Now allocate memory for the bitmap */
-    size_t pixels_to_read = (*x_size) * (*y_size);
-    *arr = malloc(pixels_to_read);
-    /* And copy the bitmap data over, we're just assuming 32-bit per pixel format for now */
-    size_t data_read_size = fread(*arr, 4, pixels_to_read, fp);
 
-    if (data_read_size != pixels_to_read) return FileLengthIsIncorrect;
+    /* Allocate memory for all the pointers first, one for each pixel across y */
+    *arr = malloc(*y_size * sizeof(pixel_type *));
+    /* And allocate memory for each pixel in that row */
+    int y;
+    for(y = 0; y < *y_size; ++y)
+    {
+        (*arr)[y] = malloc(*x_size * sizeof(pixel_type));
+        /* And go ahead and read it out from the file since we're here */
+        size_t data_read_size = fread((*arr)[y], 3, *x_size, fp);
+        if (data_read_size != *x_size) return FileLengthIsIncorrect;
+    }
 
     return OK;
 }

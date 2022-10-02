@@ -1,7 +1,8 @@
 cmake_minimum_required(VERSION 3.6)
 project(picture_kmeans C)
 
-set(SRCS kmeans.c
+set(SRCS main.c
+         kmeans.c
          picture_decoder.c)
 
 # Always optimize to 3 with all warnings to catch bugs
