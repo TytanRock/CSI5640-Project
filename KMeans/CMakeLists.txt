@@ -3,7 +3,8 @@ project(picture_kmeans C)
 
 set(SRCS main.c
          kmeans.c
-         picture_decoder.c)
+         picture_decoder.c
+         pixel_functions.c)
 
 # Always optimize to 3 with all warnings to catch bugs
 add_compile_options(-O3 -Wall)

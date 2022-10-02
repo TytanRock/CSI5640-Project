@@ -6,6 +6,7 @@
 * Copyright (c) 2016, Paul Ramsey <pramsey@cleverelephant.ca>
 *
 *------------------------------------------------------------------------*/
+#pragma once
 
 
 #include <stdlib.h>
