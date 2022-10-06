@@ -9,7 +9,3 @@ void startTimer();
 double getStartTime();
 double getElapsedTime();
 void printElapsedTime();
-
-typedef struct {
-   
-} Time;
