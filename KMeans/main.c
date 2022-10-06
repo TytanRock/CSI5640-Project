@@ -4,12 +4,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include "stopWatch.h"
 
 int main()
 {
     pixel_type **pixels;
     uint_least32_t x_size, y_size;
-
+    
+    startTimer();
+    
     StatusCode retval = bitmap_to_multidimension_array("../rgb.bmp", &pixels, &x_size, &y_size);
 
     if(retval != OK)
@@ -103,5 +106,7 @@ int main()
         printf("\n");
     }
 
+    printElapsedTime();
+    
     return 0;
 }
