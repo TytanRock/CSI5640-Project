@@ -1,19 +1,39 @@
-#include "picture_decoder.h"
 #include "kmeans.h"
+#include "picture_decoder.h"
 #include "pixel_functions.h"
+#include "stopWatch.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "stopWatch.h"
+#include <unistd.h>
 
-int main()
+int main(int argc, char *argv[])
 {
     pixel_type **pixels;
     uint_least32_t x_size, y_size;
-    
+
+    int opt;
+    char filename[100];
+    filename[0] = '\0';
+    while ((opt = getopt(argc, argv, "f:")) != -1)
+    {
+        switch(opt)
+        {
+            case 'f':
+                strcpy(filename, optarg);
+                break;
+        }
+    }
+
+    if(filename[0] == '\0')
+    {
+        printf("No file specified, exiting...\n");
+        return -1;
+    }
+
     startTimer();
-    
-    StatusCode retval = bitmap_to_multidimension_array("../rgb.bmp", &pixels, &x_size, &y_size);
+
+    StatusCode retval = bitmap_to_multidimension_array(filename, &pixels, &x_size, &y_size);
 
     if(retval != OK)
     {
@@ -107,6 +127,6 @@ int main()
     }
 
     printElapsedTime();
-    
+
     return 0;
 }
