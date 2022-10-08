@@ -7,6 +7,8 @@
 #include <string.h>
 #include <unistd.h>
 
+#define MUTE_PICTURE_OUTPUT
+
 int main(int argc, char *argv[])
 {
     pixel_type **pixels;
@@ -42,8 +44,9 @@ int main(int argc, char *argv[])
     }
 
     printf("X size: %d  Y size: %d\n", x_size, y_size);
-    printf("Array values...\n");
     int x, y;
+#ifndef MUTE_PICTURE_OUTPUT
+    printf("Array values...\n");
     for (y = y_size - 1; y >= 0; --y)
     {
         for (x = 0; x < x_size; ++x)
@@ -53,6 +56,7 @@ int main(int argc, char *argv[])
         printf("\n");
     }
     printf("This is the g value of the bmp!\n");
+#endif
     printf("Beginning kmeans work...\n");
 
     printf("Allocating memory for the flattened array\n");
@@ -115,6 +119,7 @@ int main(int argc, char *argv[])
         return -2;
     }
 
+#ifndef MUTE_PICTURE_OUTPUT
     printf("Kmeans finished, here's the values of the pixel clusters...\n");
 
     for (y = y_size - 1; y >= 0; --y)
@@ -125,6 +130,9 @@ int main(int argc, char *argv[])
         }
         printf("\n");
     }
+#else
+    printf("Kmeans finished\n");
+#endif
 
     printElapsedTime();
 

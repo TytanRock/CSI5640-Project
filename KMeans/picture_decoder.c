@@ -1,6 +1,7 @@
 #include "picture_decoder.h"
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 
 /**
  * \brief Read file as a bitmap and convert to 2d array of pixels

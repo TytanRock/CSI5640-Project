@@ -306,8 +306,10 @@ kmeans(kmeans_config *config)
 		}
 	}
 
+#if 0 // This portion of code is literally unreachable, don't know why the original auther included it
 	kmeans_free(clusters_last);
 	config->total_iterations = iterations;
 	return KMEANS_ERROR;
+#endif
 }
 
