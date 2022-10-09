@@ -9,6 +9,11 @@
 
 #define MUTE_PICTURE_OUTPUT
 
+void print_usage(char * const *argv)
+{
+    fprintf(stderr, "usage: %s -f <bitmap filename>\n", argv[0]);
+}
+
 int main(int argc, char *argv[])
 {
     pixel_type **pixels;
@@ -24,12 +29,15 @@ int main(int argc, char *argv[])
             case 'f':
                 strcpy(filename, optarg);
                 break;
+            default:
+                print_usage(argv);
+                break;
         }
     }
 
     if(filename[0] == '\0')
     {
-        printf("No file specified, exiting...\n");
+        print_usage(argv);
         return -1;
     }
 

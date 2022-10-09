@@ -11,7 +11,7 @@ case $1 in
   binary="gpu_accel_picture_kmeans"
   ;;
   *)
-  echo "Specify NO_ACCEL, THREADED, or GPU in the first parameter"
+  echo "Usage: ./run.sh <NO_ACCEL|THREADED|GPU> \"-f <path_to_file>\""
   exit -1
   ;;
 esac
