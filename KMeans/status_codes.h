@@ -12,4 +12,5 @@ typedef enum _StatusCode
     FileLengthIsIncorrect = -3,
     FileFormatIsIncorrect = -4,
     FileFormatNotSupported = -5,
+    CouldNotWriteToFile = -6,
 } StatusCode;

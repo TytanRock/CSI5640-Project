@@ -17,7 +17,8 @@ void print_usage(char * const *argv)
 int main(int argc, char *argv[])
 {
     pixel_type **pixels;
-    uint_least32_t x_size, y_size;
+    uint_least32_t x_size, y_size, header_size;
+    uint8_t *header_contents;
 
     int opt;
     char filename[100];
@@ -43,7 +44,7 @@ int main(int argc, char *argv[])
 
     startTimer();
 
-    StatusCode retval = bitmap_to_multidimension_array(filename, &pixels, &x_size, &y_size);
+    StatusCode retval = bitmap_to_multidimension_array(filename, &pixels, &x_size, &y_size, &header_contents, &header_size);
 
     if(retval != OK)
     {
@@ -141,6 +142,21 @@ int main(int argc, char *argv[])
 #else
     printf("Kmeans finished\n");
 #endif
+
+    /* Reuse the flat array and write to it the value of each new pixel */
+
+    int i;
+    for (i = 0; i < x_size * y_size; ++i)
+    {
+        int cluster_value = cfg.clusters[i];
+        flat_array[i] = *(pixel_type *)cfg.centers[cluster_value];
+        //printf("%x", ((pixel_type *)cfg.centers[cluster_value])->rgb.g);
+    }
+
+    printf("Writing to new bitmap\n");
+    printf("Size of header is %d while data is %d\n", header_size, (x_size * y_size) * sizeof(pixel_type));
+    StatusCode write_status = write_to_bitmap("newfile.bmp", header_contents, header_size, (uint8_t *)flat_array, (x_size * y_size) * sizeof(pixel_type));
+    printf("Writing return was %d\n", write_status);
 
     printElapsedTime();
 

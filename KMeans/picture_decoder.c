@@ -4,22 +4,48 @@
 #include <stdlib.h>
 
 /**
+ * Helper function that will clean up a file pointer once it falls out of scope
+ */
+static void cleanup_file(FILE **fp)
+{
+    fclose(*fp);
+}
+
+StatusCode write_to_bitmap(char const *filename, uint8_t const *header, uint_least32_t header_size, uint8_t const *data, uint_least32_t data_size)
+{
+    FILE *fp __attribute__((cleanup(cleanup_file)));
+    printf("opening...\n");
+    fp = fopen(filename, "wb");
+    if (fp == NULL) return CouldNotOpenFile;
+    printf("writing 1\n");
+    if (fwrite(header, 1, header_size, fp) != header_size) return CouldNotWriteToFile;
+    printf("writing 2\n");
+    if (fwrite(data, 1, data_size, fp) != data_size) return CouldNotWriteToFile;
+    printf("finished\n");
+    return OK;
+}
+
+/**
  * \brief Read file as a bitmap and convert to 2d array of pixels
  *
  * \param filename Name of file to read
  * \param arr pointer to 2d array. Will be malloc'd or NULL so caller must free
  * \param x_size pointer to size of x-dimension.
  * \param y_size pointer to size of y-dimension.
+ * \param header_val pointer to byte array. Will be malloc'd or NULL so caller must free
+ * \param header_size pointer to size of header
  * \return Status code of function
  */
-StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***arr, uint_least32_t *x_size, uint_least32_t *y_size)
+StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***arr, uint_least32_t *x_size, uint_least32_t *y_size, uint8_t **header_val, uint_least32_t *header_size)
 {
     /* Make sure none of the parameters are null */
-    if (arr == NULL || x_size == NULL || y_size == NULL) return InvalidParameters;
+    if (arr == NULL || x_size == NULL || y_size == NULL || header_val == NULL || header_size == NULL) return InvalidParameters;
     /* Initialize values to default values so we know they're all properly set */
     *arr = NULL;
+    *header_val = NULL;
     *x_size = 0;
     *y_size = 0;
+    *header_size = 0;
 
     /**
      * Bitmap file has the following contents:
@@ -32,7 +58,8 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***ar
      *  - Gap2 (optional) (variable size)
      *  - ICC color profile (optional) (variable size)
      */
-     FILE *fp = fopen(filename, "rb");
+     FILE *fp __attribute__((cleanup(cleanup_file)));
+     fp = fopen(filename, "rb");
      if (fp == NULL) return CouldNotOpenFile;
 
     /* Read file header at 14 bytes */
@@ -88,9 +115,15 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***ar
             return FileFormatNotSupported;
     }
 
-    /* We can do more checking on the file if we want, but I'm going straight to getting the pixel values */
-    /* First seek to where the data actually starts */
-    if (fseek(fp, pixel_array_offset, SEEK_SET) != 0) return FileLengthIsIncorrect;
+    /* We can do more checking, but instead we'll just copy this header over, since it will be basically identical anyway */
+    if(fseek(fp, 0, SEEK_SET)) return FileLengthIsIncorrect;
+    *header_val = malloc(pixel_array_offset);
+    *header_size = pixel_array_offset;
+    fread(*header_val, 1, pixel_array_offset, fp);
+
+    // /* We can do more checking on the file if we want, but I'm going straight to getting the pixel values */
+    // /* First seek to where the data actually starts */
+    // if (fseek(fp, pixel_array_offset, SEEK_SET) != 0) return FileLengthIsIncorrect;
     /* Now allocate memory for the bitmap */
 
     /* Allocate memory for all the pointers first, one for each pixel across y */
