@@ -60,6 +60,17 @@ StatusCode write_to_bitmap(char const *filename, uint8_t const *data, uint_least
     bitmap_info.colors_in_color_palette = 0;
     bitmap_info.important_colors = 0;
 
+    /* If there's padding, determine what the padding should be */
+    int pad_size = 4 - (((width) * 3) % 4); // Find a better way to represent this
+    if (pad_size == 4) pad_size = 0;
+
+    /* Do some assertions to ensure I don't have a math bug */
+    assert(pad_size >= 0);
+    assert(pad_size < 4);
+
+    /* Modify the size of the overall file with the padding bytes */
+    header.file_size += pad_size * height;
+
     FILE *fp __attribute__((cleanup(cleanup_file)));
     printf("opening...\n");
     fp = fopen(filename, "wb");
@@ -77,13 +88,6 @@ StatusCode write_to_bitmap(char const *filename, uint8_t const *data, uint_least
         unsigned int offset = width * i * sizeof(pixel_type);
         /* First write a row of data */
         if (fwrite(data + offset, 1, width * sizeof(pixel_type), fp) != width * sizeof(pixel_type)) return CouldNotWriteToFile;
-        /* Then if there's padding, write the padding as 0's */
-        int pad_size = 4 - (((width) * 3) % 4); // Find a better way to represent this
-        if (pad_size == 4) pad_size = 0;
-
-        /* Do some assertions to ensure I don't have a math bug */
-        assert(pad_size >= 0);
-        assert(pad_size < 4);
 
         /* And write the padding, the data doesn't matter so just repeat start of data I guess */
         if (fwrite(data, 1, pad_size, fp) != pad_size) return CouldNotWriteToFile;
