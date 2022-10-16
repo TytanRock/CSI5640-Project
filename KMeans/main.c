@@ -22,7 +22,7 @@ int main(int argc, char *argv[])
     int center_count = -1;
 
     int opt;
-    char *filename == NULL;
+    char *filename = NULL;
     while ((opt = getopt(argc, argv, "f:c:")) != -1)
     {
         switch(opt)
