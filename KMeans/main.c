@@ -17,8 +17,7 @@ void print_usage(char * const *argv)
 int main(int argc, char *argv[])
 {
     pixel_type **pixels;
-    uint_least32_t x_size, y_size, header_size;
-    uint8_t *header_contents;
+    uint_least32_t x_size, y_size;
 
     int opt;
     char filename[100];
@@ -44,7 +43,7 @@ int main(int argc, char *argv[])
 
     startTimer();
 
-    StatusCode retval = bitmap_to_multidimension_array(filename, &pixels, &x_size, &y_size, &header_contents, &header_size);
+    StatusCode retval = bitmap_to_multidimension_array(filename, &pixels, &x_size, &y_size);
 
     if(retval != OK)
     {
@@ -190,7 +189,7 @@ int main(int argc, char *argv[])
     }
 
     printf("Writing to new bitmap\n");
-    StatusCode write_status = write_to_bitmap("newfile.bmp", header_contents, header_size, (uint8_t *)flat_array, (x_size * y_size) * sizeof(pixel_type));
+    StatusCode write_status = write_to_bitmap("newfile.bmp", (uint8_t *)flat_array, (x_size * y_size) * sizeof(pixel_type), x_size, y_size);
     printf("Writing return was %d\n", write_status);
 
     printElapsedTime();
