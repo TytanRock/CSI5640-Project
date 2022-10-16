@@ -3,6 +3,27 @@
 #include <string.h>
 #include <stdlib.h>
 
+typedef struct __attribute__((packed)) _bmp_header_t {
+    uint8_t header_field[2];
+    uint32_t file_size;
+    uint8_t reserved[4];
+    uint32_t offset;
+} bmp_header_t;
+
+typedef struct __attribute__((packed)) _windows_bitmapinfoheader_t {
+    uint32_t header_size; // Always 40
+    uint32_t width;
+    uint32_t height;
+    uint16_t color_planes; // Always 1
+    uint16_t bits_per_pixel; // Only support 24
+    uint32_t compression_method; // Only support BI_RGB (0)
+    uint32_t image_size;
+    uint32_t horizontal_resolution;
+    uint32_t vertical_resolution;
+    uint32_t colors_in_color_palette; // ignored
+    uint32_t important_colors; // ignored
+} windows_bitmapinfoheader_t;
+
 /**
  * Helper function that will clean up a file pointer once it falls out of scope
  */
@@ -63,9 +84,9 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***ar
      if (fp == NULL) return CouldNotOpenFile;
 
     /* Read file header at 14 bytes */
-    uint8_t file_header_text[14];
-    size_t read_size = fread(file_header_text, 1, sizeof(file_header_text) / sizeof(*file_header_text), fp);
-    if (read_size != sizeof(file_header_text) / sizeof(*file_header_text)) return FileLengthIsIncorrect;
+    bmp_header_t header;
+    size_t read_size = fread(&header, 1, sizeof(header), fp);
+    if (read_size != sizeof(header)) return FileLengthIsIncorrect;
 
     /* And verify header matches expectations */
     enum bitmap_format {
@@ -77,38 +98,33 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***ar
         Pointer
     } format;
     if (0) {}
-    else if (memcmp(file_header_text, "BM", 2) == 0) { format = Windows;}
-    else if (memcmp(file_header_text, "BA", 2) == 0) { format = StructBitmap; }
-    else if (memcmp(file_header_text, "CI", 2) == 0) { format = StructColor; }
-    else if (memcmp(file_header_text, "CP", 2) == 0) { format = ConstColorPointer; }
-    else if (memcmp(file_header_text, "IC", 2) == 0) { format = StructIcon; }
-    else if (memcmp(file_header_text, "PT", 2) == 0) { format = Pointer; }
+    else if (memcmp(header.header_field, "BM", 2) == 0) { format = Windows;}
+    else if (memcmp(header.header_field, "BA", 2) == 0) { format = StructBitmap; }
+    else if (memcmp(header.header_field, "CI", 2) == 0) { format = StructColor; }
+    else if (memcmp(header.header_field, "CP", 2) == 0) { format = ConstColorPointer; }
+    else if (memcmp(header.header_field, "IC", 2) == 0) { format = StructIcon; }
+    else if (memcmp(header.header_field, "PT", 2) == 0) { format = Pointer; }
     else
     {
         /* Invalid header */
         return FileFormatIsIncorrect;
     }
 
-    /* Get bitmap size from header */
-    uint32_t bitmap_size;
-    memcpy(&bitmap_size, &file_header_text[2], sizeof(bitmap_size));
-    /* Next 4 bytes are useless */
     /* Get the offset of where the pixel array is */
-    uint32_t pixel_array_offset;
-    memcpy(&pixel_array_offset, &file_header_text[10], sizeof(pixel_array_offset));
+    uint32_t pixel_array_offset = header.offset;
 
     /* Need to get the x and y dimensions from the bitmapinfoheader */
+    windows_bitmapinfoheader_t bitmap_info_header;
     switch (format)
     {
         case Windows:
         {
             /* Width is 4 bytes at offset 0x12, Height is 4 bytes at offset 0x16 */
             /* So get the next 12 bytes and we can find the height and width */
-            uint8_t bitmap_info_header[12];
-            read_size = fread(bitmap_info_header, 1, sizeof(bitmap_info_header) / sizeof(*bitmap_info_header), fp);
-            if (read_size != sizeof(bitmap_info_header) / sizeof(*bitmap_info_header)) return FileLengthIsIncorrect;
-            memcpy(x_size, &bitmap_info_header[4], 4);
-            memcpy(y_size, &bitmap_info_header[8], 4);
+            read_size = fread(&bitmap_info_header, 1, sizeof(bitmap_info_header), fp);
+            if (read_size != sizeof(bitmap_info_header)) return FileLengthIsIncorrect;
+            *x_size = bitmap_info_header.width;
+            *y_size = bitmap_info_header.height;
         }   break;
         default:
             /* We can pretty trivially support OS/2, but I don't want to just yet */

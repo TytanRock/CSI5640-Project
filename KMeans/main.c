@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
 
     printf("Configuring kmeans cfg object\n");
     /* Come up with some centers to start with, I guess just full R, full G and full B for now... */
-    pixel_type centers[3];
+    pixel_type centers[12];
     centers[0].rgb.r = 255;
     centers[0].rgb.g = 0;
     centers[0].rgb.b = 0;
@@ -103,10 +103,46 @@ int main(int argc, char *argv[])
     centers[2].rgb.r = 0;
     centers[2].rgb.g = 0;
     centers[2].rgb.b = 255;
-    void *center_pointers[3];
+    centers[3].rgb.r = 128;
+    centers[3].rgb.g = 128;
+    centers[3].rgb.b = 128;
+    centers[4].rgb.r = 0;
+    centers[4].rgb.g = 0;
+    centers[4].rgb.b = 0;
+    centers[5].rgb.r = 255;
+    centers[5].rgb.g = 255;
+    centers[5].rgb.b = 255;
+    centers[6].rgb.r = 128;
+    centers[6].rgb.g = 0;
+    centers[6].rgb.b = 0;
+    centers[7].rgb.r = 180;
+    centers[7].rgb.g = 0;
+    centers[7].rgb.b = 0;
+    centers[8].rgb.r = 100;
+    centers[8].rgb.g = 0;
+    centers[8].rgb.b = 0;
+    centers[9].rgb.r = 50;
+    centers[9].rgb.g = 0;
+    centers[9].rgb.b = 0;
+    centers[10].rgb.r = 75;
+    centers[10].rgb.g = 0;
+    centers[10].rgb.b = 0;
+    centers[11].rgb.r = 25;
+    centers[11].rgb.g = 0;
+    centers[11].rgb.b = 0;
+    void *center_pointers[12];
     center_pointers[0] = &centers[0];
     center_pointers[1] = &centers[1];
     center_pointers[2] = &centers[2];
+    center_pointers[3] = &centers[3];
+    center_pointers[4] = &centers[4];
+    center_pointers[5] = &centers[5];
+    center_pointers[6] = &centers[6];
+    center_pointers[7] = &centers[7];
+    center_pointers[8] = &centers[8];
+    center_pointers[9] = &centers[9];
+    center_pointers[10] = &centers[10];
+    center_pointers[11] = &centers[11];
 
     /* Now set up the kmeans to do the clustering */
     kmeans_config cfg;
@@ -115,7 +151,7 @@ int main(int argc, char *argv[])
     cfg.objs = pointer_arr;
     cfg.num_objs = x_size * y_size;
     cfg.centers = center_pointers;
-    cfg.k = 3; // We want to find the r,g,b centers for now I guess
+    cfg.k = 12; // We want to find the r,g,b centers for now I guess
     cfg.max_iterations = 0; // Library default
     cfg.clusters = malloc(cfg.num_objs * sizeof(int)); // I guess we have to allocate and free this?
 
@@ -154,7 +190,6 @@ int main(int argc, char *argv[])
     }
 
     printf("Writing to new bitmap\n");
-    printf("Size of header is %d while data is %d\n", header_size, (x_size * y_size) * sizeof(pixel_type));
     StatusCode write_status = write_to_bitmap("newfile.bmp", header_contents, header_size, (uint8_t *)flat_array, (x_size * y_size) * sizeof(pixel_type));
     printf("Writing return was %d\n", write_status);
 
