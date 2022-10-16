@@ -11,7 +11,7 @@ case $1 in
   binary="gpu_accel_picture_kmeans"
   ;;
   *)
-  echo "Usage: ./run.sh <NO_ACCEL|THREADED|GPU> \"-f <path_to_file>\""
+  echo "Usage: ./run.sh <NO_ACCEL|THREADED|GPU> \"-f <path_to_file> -c <center_count>\""
   exit -1
   ;;
 esac
