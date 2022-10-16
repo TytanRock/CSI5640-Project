@@ -100,12 +100,12 @@ StatusCode write_to_bitmap(char const *filename, uint8_t const *data, uint_least
  * \brief Read file as a bitmap and convert to 2d array of pixels
  *
  * \param filename Name of file to read
- * \param arr pointer to 2d array. Will be malloc'd or NULL so caller must free
+ * \param arr pointer to flat array. Will be malloc'd or NULL so caller must free
  * \param x_size pointer to size of x-dimension.
  * \param y_size pointer to size of y-dimension.
  * \return Status code of function
  */
-StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***arr, uint_least32_t *x_size, uint_least32_t *y_size)
+StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type **arr, uint_least32_t *x_size, uint_least32_t *y_size)
 {
     /* Make sure none of the parameters are null */
     if (arr == NULL || x_size == NULL || y_size == NULL) return InvalidParameters;
@@ -180,26 +180,27 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type ***ar
     // /* We can do more checking on the file if we want, but I'm going straight to getting the pixel values */
     // /* First seek to where the data actually starts */
     if (fseek(fp, pixel_array_offset, SEEK_SET) != 0) return FileLengthIsIncorrect;
-    /* Now allocate memory for the bitmap */
 
-    /* Allocate memory for all the pointers first, one for each pixel across y */
-    *arr = malloc(*y_size * sizeof(pixel_type *));
+    /* Every row must be on a 4-byte boundary, so we move the cursor by the appropriate amount */
+    int byte_padding = 4 - (((*x_size) * 3) % 4); // Find a better way to represent this
+    if (byte_padding == 4) byte_padding = 0;
+
+    /* Do some assertions to ensure I don't have a math bug */
+    assert(byte_padding >= 0);
+    assert(byte_padding < 4);
+
+    /* Now allocate memory for the bitmap */
+    *arr = malloc(*y_size * *x_size * sizeof(pixel_type));
     /* And allocate memory for each pixel in that row */
     int y;
     for(y = 0; y < *y_size; ++y)
     {
-        (*arr)[y] = malloc(*x_size * sizeof(pixel_type));
+        // Don't account for the size of pixel_type, since pointer math handles that for you already
+        int offset = y * (*x_size);
         /* And go ahead and read it out from the file since we're here */
-        size_t data_read_size = fread((*arr)[y], 3, *x_size, fp);
+        size_t data_read_size = fread(*arr + offset, sizeof(pixel_type), *x_size, fp);
         if (data_read_size != *x_size) return FileLengthIsIncorrect;
-        /* Every row must be on a 4-byte boundary, so we read move the cursor by the appropriate amount */
-        int amount_to_move_by = 4 - (((*x_size) * 3) % 4); // Find a better way to represent this
-        if (amount_to_move_by == 4) amount_to_move_by = 0;
-
-        /* Do some assertions to ensure I don't have a math bug */
-        assert(amount_to_move_by >= 0);
-        assert(amount_to_move_by < 4);
-        if(fseek(fp, amount_to_move_by, SEEK_CUR) != 0) return FileLengthIsIncorrect;
+        if(fseek(fp, byte_padding, SEEK_CUR) != 0) return FileLengthIsIncorrect;
     }
 
     return OK;
