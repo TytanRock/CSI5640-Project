@@ -22,13 +22,13 @@ int main(int argc, char *argv[])
     int center_count = -1;
 
     int opt;
-    char filename[100];
-    filename[0] = '\0';
+    char *filename == NULL;
     while ((opt = getopt(argc, argv, "f:c:")) != -1)
     {
         switch(opt)
         {
             case 'f':
+                filename = malloc(strlen(optarg));
                 strcpy(filename, optarg);
                 break;
             case 'c':
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         }
     }
 
-    if(filename[0] == '\0' || center_count == -1)
+    if(filename == NULL || center_count == -1)
     {
         print_usage(argv);
         return -1;
