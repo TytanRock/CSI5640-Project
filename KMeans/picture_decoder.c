@@ -72,14 +72,10 @@ StatusCode write_to_bitmap(char const *filename, uint8_t const *data, uint_least
     header.file_size += pad_size * height;
 
     FILE *fp __attribute__((cleanup(cleanup_file)));
-    printf("opening...\n");
     fp = fopen(filename, "wb");
     if (fp == NULL) return CouldNotOpenFile;
-    printf("writing bitmap header\n");
     if (fwrite(&header, 1, sizeof(header), fp) != sizeof(header)) return CouldNotWriteToFile;
-    printf("writing bitmap info\n");
     if (fwrite(&bitmap_info, 1, sizeof(bitmap_info), fp) != sizeof(bitmap_info)) return CouldNotWriteToFile;
-    printf("writing data\n");
 
     int i;
     for(i = 0; i < height; ++i)
@@ -92,7 +88,6 @@ StatusCode write_to_bitmap(char const *filename, uint8_t const *data, uint_least
         /* And write the padding, the data doesn't matter so just repeat start of data I guess */
         if (fwrite(data, 1, pad_size, fp) != pad_size) return CouldNotWriteToFile;
     }
-    printf("finished\n");
     return OK;
 }
 

@@ -54,19 +54,14 @@ int main(int argc, char *argv[])
     printf("Reading file %s and generating %d centers\n", filename, center_count);
 
     startTimer();
-
-    printf("Reading file\n");
     StatusCode retval = bitmap_to_multidimension_array(filename, &pixels, &x_size, &y_size);
     uint_least32_t total_pixels = x_size * y_size;
 
     if(retval != OK)
     {
-        printf("An error occurred... %d\n", retval);
+        fprintf(stderr, "An error occurred... %d\n", retval);
         return -1;
     }
-
-    printf("X size: %d  Y size: %d\n", x_size, y_size);
-    printf("Beginning kmeans work...\n");
 
     void **pointer_arr = malloc(total_pixels * sizeof(void *));
     int i;
@@ -75,7 +70,6 @@ int main(int argc, char *argv[])
         pointer_arr[i] = &pixels[i];
     }
 
-    printf("Configuring kmeans cfg object\n");
     /* Come up with some centers to start with, I guess just full R, full G and full B for now... */
     pixel_type *centers;
     generate_pixel_centers(&centers, center_count);
@@ -96,15 +90,13 @@ int main(int argc, char *argv[])
     cfg.max_iterations = 0; // Library default
     cfg.clusters = malloc(total_pixels * sizeof(int)); // I guess we have to allocate and free this?
 
-    printf("Running kmeans\n");
     kmeans_result res = kmeans(&cfg);
 
     if (res != KMEANS_OK)
     {
-        printf("An error occurred in the kmeans cluster finder: %d\n", res);
+        fprintf(stderr, "An error occurred in the kmeans cluster finder: %d\n", res);
         return -2;
     }
-    printf("Kmeans finished\n");
 
     /* Reuse the flat array and write to it the value of each new pixel */
     for (i = 0; i < total_pixels; ++i)
@@ -113,9 +105,7 @@ int main(int argc, char *argv[])
         pixels[i] = *(pixel_type *)cfg.centers[cluster_value];
     }
 
-    printf("Writing to new bitmap\n");
     StatusCode write_status = write_to_bitmap("newfile.bmp", (uint8_t *)pixels, total_pixels * sizeof(pixel_type), x_size, y_size);
-    printf("Writing return was %d\n", write_status);
 
     printElapsedTime();
 
