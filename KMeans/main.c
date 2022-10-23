@@ -53,9 +53,12 @@ int main(int argc, char *argv[])
 
     printf("Reading file %s and generating %d centers\n", filename, center_count);
 
-    startTimer();
+    timer_instance_t timer;
+    initTimer(&timer);
+    startTimer(&timer);
     StatusCode retval = bitmap_to_multidimension_array(filename, &pixels, &x_size, &y_size);
     uint_least32_t total_pixels = x_size * y_size;
+    lapTimer(&timer, "Reading file");
 
     if(retval != OK)
     {
@@ -78,6 +81,7 @@ int main(int argc, char *argv[])
     {
         center_array[i] = &centers[i];
     }
+    lapTimer(&timer, "Generating Centers");
 
     /* Now set up the kmeans to do the clustering */
     kmeans_config cfg;
@@ -90,7 +94,9 @@ int main(int argc, char *argv[])
     cfg.max_iterations = 0; // Library default
     cfg.clusters = malloc(total_pixels * sizeof(int)); // I guess we have to allocate and free this?
 
+    lapTimer(&timer, "Setting up KMeans");
     kmeans_result res = kmeans(&cfg);
+    lapTimer(&timer, "Finished running KMeans");
 
     if (res != KMEANS_OK)
     {
@@ -106,8 +112,9 @@ int main(int argc, char *argv[])
     }
 
     StatusCode write_status = write_to_bitmap("newfile.bmp", (uint8_t *)pixels, total_pixels * sizeof(pixel_type), x_size, y_size);
+    lapTimer(&timer, "Writing to output file");
 
-    printElapsedTime();
+    printElapsedTime(&timer);
 
     return 0;
 }
