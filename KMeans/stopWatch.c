@@ -65,7 +65,8 @@ double getElapsedTime(timer_instance_t const *tmr)
 void printElapsedTime(timer_instance_t const *tmr)
 {
     printf("Total time spent: %.3f s\n", getElapsedTime(tmr));
-    for (int i = 0; i < tmr->lap_count; ++i)
+    int i;
+    for (i = 0; i < tmr->lap_count; ++i)
     {
         printf(" %s took %.3f s\n", tmr->lap_names[i], tmr->laps[i] - (i == 0 ? tmr->start_time : tmr->laps[i-1]));
     }
