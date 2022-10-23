@@ -1,7 +1,6 @@
 #pragma once
 
 #include <stdint.h>
-#include <time.h>
 
 typedef struct _timer_instance_t{
     double start_time;
