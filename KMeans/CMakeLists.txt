@@ -27,4 +27,12 @@ endif()
 
 add_executable(${OUTPUT_NAME} ${SRCS})
 
+if(ACCELERATION_TYPE STREQUAL "NO_ACCEL")
+    # All is good, no need to add additional linker flags
+elseif(ACCELERATION_TYPE STREQUAL "THREADED")
+    # Need the additional linker flags since cmake doesn't automatically bring them over from the compile step
+    set_target_properties(${OUTPUT_NAME} PROPERTIES LINK_FLAGS "-acc -ta=multicore -Minfo=accel")
+elseif(ACCELERATION_TYPE STREQUAL "GPU")
+    set_target_properties(${OUTPUT_NAME} PROPERTIES LINK_FLAGS "-acc -ta=tesla:cc35,nofma -Minfo=accel")
+endif()
 
