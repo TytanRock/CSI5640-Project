@@ -16,8 +16,20 @@ case $1 in
   ;;
 esac
 
+if [ "$3" = "Profile" ]
+then
+  profile_status="ENABLED"
+else
+  profile_status="DISABLED"
+fi
+
 mkdir -p build
 cd build
-cmake .. -DACCELERATION_TYPE:STRING=$1
+cmake .. -DACCELERATION_TYPE:STRING=$1 -DPROFILING_STATUS:STRING=$profile_status
 make
 ./$binary $2
+
+if [ "$3" = "Profile" ]
+then
+  gprof $binary > profile_output.txt
+fi

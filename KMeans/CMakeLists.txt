@@ -25,6 +25,13 @@ else()
     message(FATAL_ERROR "Acceleration type not defined, pass either into -DACCELERATION_TYPE:STRING=<NO_ACCEL, THREADED, GPU>")
 endif()
 
+if(PROFILING_STATUS STREQUAL ENABLED)
+    message(STATUS "Profiling is enabled. Running will take longer than normal.")
+    add_compile_options(-pg)
+else()
+    message(STATUS "Profiling is disabled.")
+endif()
+
 add_executable(${OUTPUT_NAME} ${SRCS})
 
 if(ACCELERATION_TYPE STREQUAL "NO_ACCEL")
@@ -33,6 +40,6 @@ elseif(ACCELERATION_TYPE STREQUAL "THREADED")
     # Need the additional linker flags since cmake doesn't automatically bring them over from the compile step
     set_target_properties(${OUTPUT_NAME} PROPERTIES LINK_FLAGS "-acc -ta=multicore -Minfo=accel")
 elseif(ACCELERATION_TYPE STREQUAL "GPU")
-    set_target_properties(${OUTPUT_NAME} PROPERTIES LINK_FLAGS "-acc -ta=tesla:cc35,nofma -Minfo=accel")
+    set_target_properties(${OUTPUT_NAME} PROPERTIES LINK_FLAGS "-acc -ta=tesla:cc35,nofma -Minfo=accel -pg")
 endif()
 
