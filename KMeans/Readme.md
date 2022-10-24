@@ -21,3 +21,9 @@ To build perform the following steps in this directory:
    - GPU - Perform GPU acceleration. This is equivalent to `pgcc -O3 -acc -ta=tesla:cc35,nofma -Minfo=accel -o gpu_accel_picture_kmeans`
 4. `make`
 5. Execute the binary you created. The resultant binary will change based on the type of acceleration you provided.
+
+### Profiling
+To profile, we are using the gprof tool. To use, simply add `-pg` as a compiler flag. Once you compile, you should see a file called "gmon.out".  
+Then run the progam as normal. It will take longer to run with this flag added.  
+Finally, run `gprof exectuableName > output.txt`  
+This will produce a file that shows what functions were called, how long they took, etc. More info on gprof can be seen at [GPROF Info](https://ftp.gnu.org/old-gnu/Manuals/gprof-2.9.1/html_chapter/gprof_5.html)
