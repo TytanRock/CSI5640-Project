@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "kmeans.h"
+#include "pixel_functions.h"
 
 #ifdef KMEANS_THREADED
 #include <pthread.h>
@@ -24,17 +25,13 @@ static void
 update_r(kmeans_config *config)
 {
 	int i;
-
-	for (i = 0; i < config->num_objs; i++)
+	int k = config->num_objs;
+#pragma acc kernels
+	for (i = 0; i < k; i++)
 	{
 		double distance, curr_distance;
 		int cluster, curr_cluster;
 		Pointer obj;
-
-		assert(config->objs != NULL);
-		assert(config->num_objs > 0);
-		assert(config->centers);
-		assert(config->clusters);
 
 		obj = config->objs[i];
 
@@ -49,13 +46,13 @@ update_r(kmeans_config *config)
 		}
 
 		/* Initialize with distance to first cluster */
-		curr_distance = (config->distance_method)(obj, config->centers[0]);
+		curr_distance = kmeans_pixel_distance(obj, config->centers[0]);
 		curr_cluster = 0;
 
 		/* Check all other cluster centers and find the nearest */
 		for (cluster = 1; cluster < config->k; cluster++)
 		{
-			distance = (config->distance_method)(obj, config->centers[cluster]);
+			distance = kmeans_pixel_distance(obj, config->centers[cluster]);
 			if (distance < curr_distance)
 			{
 				curr_distance = distance;
@@ -255,8 +252,6 @@ kmeans(kmeans_config *config)
 	assert(config);
 	assert(config->objs);
 	assert(config->num_objs);
-	assert(config->distance_method);
-	assert(config->centroid_method);
 	assert(config->centers);
 	assert(config->k);
 	assert(config->clusters);

@@ -13,25 +13,52 @@ double rgb_distance_squared(pixel_type const *a, pixel_type const *b)
 
 void rgb_centroid(pixel_type const **pixel_list, int const *cluster_list, size_t num_objs, int cluster, pixel_type *central_pixel)
 {
-    size_t average_count = 0;
     double average_r, average_g, average_b;
     average_r = average_g = average_b = 0;
-    size_t count;
-    for (count = 0; count < num_objs; ++count)
+    size_t count = 0;
+    size_t i = 0;
+
+    /* Run through one time to get a count of how many pixels to count for the average */
+    for (i = 0; i < num_objs; ++i)
     {
-        /* If this item isn't part of the cluster we're calculating for, ignore it */
-        if (cluster_list[count] != cluster) continue;
-        /* This is part of the cluster, so add to the average value */
-        /* This currently makes it impossible to accelerate this loop, maybe come up with a better way to add to an average? */
-        average_r = (average_r * average_count) + pixel_list[count]->rgb.r;
-        average_g = (average_g * average_count) + pixel_list[count]->rgb.g;
-        average_b = (average_b * average_count) + pixel_list[count]->rgb.b;
-        average_count ++;
-        average_r /= average_count;
-        average_g /= average_count;
-        average_b /= average_count;
+        if (cluster_list[i] == cluster) count++;
     }
+
+    /* malloc memory to keep track of averages */
+    double *averages = malloc(3 * sizeof(double) * count);
+    const pixel_type **actual_pixels = malloc(sizeof(pixel_type *) * count);
+    int count_iter = 0;
+
+    /* Copy over the pixels that matter */
+    for (i = 0; i < num_objs; ++i)
+    {
+        if (cluster_list[i] == cluster)
+        {
+            actual_pixels[count_iter++] = pixel_list[i];
+        }
+    }
+    count_iter = 0;
+
+    #pragma acc parallel loop present(averages[0:count], actual_pixels[0:count])
+    for (i = 0; i < count; ++i)
+    {
+        /* This is part of the cluster, so add to the average value */
+        averages[(3 * i) + 0] = (double)actual_pixels[i]->rgb.r / (double)count;
+        averages[(3 * i) + 1] = (double)actual_pixels[i]->rgb.g / (double)count;
+        averages[(3 * i) + 2] = (double)actual_pixels[i]->rgb.b / (double)count;
+    }
+
+    for (i = 0; i < count; ++i)
+    {
+        average_r += averages[(3 * i) + 0];
+        average_g += averages[(3 * i) + 1];
+        average_b += averages[(3 * i) + 2];
+    }
+
     central_pixel->rgb.r = (average_r + 0.5); // Round to nearest integer
     central_pixel->rgb.g = (average_g + 0.5); // Round to nearest integer
     central_pixel->rgb.b = (average_b + 0.5); // Round to nearest integer
+
+    free(averages);
+    free(actual_pixels);
 }
