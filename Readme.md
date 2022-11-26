@@ -4,7 +4,11 @@ Project is to implement kmeans and hardware-accelerate with openacc
 Documents link: 
 https://drive.google.com/drive/u/1/folders/0AGVr6qJfNhe8Uk9PVA
 
-
+## Directory Structure  
+| Folder      | Description |
+| ----------- | ----------- |
+| KMeans/      | Final Project Code |
+| OpenAcc_Example/   | Example code to test using OpenACC |
 ## OpenAcc setup
 Connect to VPN (request SECS account if you don't have one at: https://elara.secs.oakland.edu/SECSNetworkLogins/request.aspx). It only takes a few minutes for the to approve. 
 
