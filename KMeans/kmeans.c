@@ -15,6 +15,7 @@
 #include <string.h>
 
 #include "kmeans.h"
+#include "pixel_functions.h"
 
 #ifdef KMEANS_THREADED
 #include <pthread.h>
@@ -24,47 +25,50 @@ static void
 update_r(kmeans_config *config)
 {
 	int i;
-
-	for (i = 0; i < config->num_objs; i++)
+	int num_objs = config->num_objs;
+	int k = config->k;
+	#pragma acc data copyin(config->clusters[:num_objs], config->objs[:num_objs]) copy(config->centers[:num_objs])
 	{
-		double distance, curr_distance;
-		int cluster, curr_cluster;
-		Pointer obj;
-
-		assert(config->objs != NULL);
-		assert(config->num_objs > 0);
-		assert(config->centers);
-		assert(config->clusters);
-
-		obj = config->objs[i];
-
-		/*
-		* Don't try to cluster NULL objects, just add them
-		* to the "unclusterable cluster"
-		*/
-		if (!obj)
+		#pragma acc region
 		{
-			config->clusters[i] = KMEANS_NULL_CLUSTER;
-			continue;
-		}
-
-		/* Initialize with distance to first cluster */
-		curr_distance = (config->distance_method)(obj, config->centers[0]);
-		curr_cluster = 0;
-
-		/* Check all other cluster centers and find the nearest */
-		for (cluster = 1; cluster < config->k; cluster++)
-		{
-			distance = (config->distance_method)(obj, config->centers[cluster]);
-			if (distance < curr_distance)
+			#pragma acc loop independent
+			for (i = 0; i < num_objs; i++)
 			{
-				curr_distance = distance;
-				curr_cluster = cluster;
+				double distance, curr_distance;
+				int cluster, curr_cluster;
+				Pointer obj;
+
+				obj = config->objs[i];
+
+				/*
+				* Don't try to cluster NULL objects, just add them
+				* to the "unclusterable cluster"
+				*/
+				if (!obj)
+				{
+					config->clusters[i] = KMEANS_NULL_CLUSTER;
+					continue;
+				}
+
+				/* Initialize with distance to first cluster */
+				curr_distance = INFINITY;
+				curr_cluster = 0;
+
+				/* Check all other cluster centers and find the nearest */
+				for (cluster = 0; cluster < k; cluster++)
+				{
+					distance = rgb_distance_squared(obj, config->centers[cluster]);
+					if (distance < curr_distance)
+					{
+						curr_distance = distance;
+						curr_cluster = cluster;
+					}
+				}
+
+				/* Store the nearest cluster this object is in */
+				config->clusters[i] = curr_cluster;
 			}
 		}
-
-		/* Store the nearest cluster this object is in */
-		config->clusters[i] = curr_cluster;
 	}
 }
 
@@ -255,8 +259,6 @@ kmeans(kmeans_config *config)
 	assert(config);
 	assert(config->objs);
 	assert(config->num_objs);
-	assert(config->distance_method);
-	assert(config->centroid_method);
 	assert(config->centers);
 	assert(config->k);
 	assert(config->clusters);

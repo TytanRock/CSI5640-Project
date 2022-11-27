@@ -172,8 +172,8 @@ StatusCode bitmap_to_multidimension_array(char const *filename, pixel_type **arr
             return FileFormatNotSupported;
     }
 
-    // /* We can do more checking on the file if we want, but I'm going straight to getting the pixel values */
-    // /* First seek to where the data actually starts */
+    /* We can do more checking on the file if we want, but I'm going straight to getting the pixel values */
+    /* First seek to where the data actually starts */
     if (fseek(fp, pixel_array_offset, SEEK_SET) != 0) return FileLengthIsIncorrect;
 
     /* Every row must be on a 4-byte boundary, so we move the cursor by the appropriate amount */
